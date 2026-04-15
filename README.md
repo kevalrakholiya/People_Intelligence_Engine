@@ -129,7 +129,7 @@ A **Logistic Regression model** was developed to predict employee attrition:
 
 ```bash
 # Clone the repository
-git clone https://github.com/kevalrakholiya/HR_Analytics
+git clone https://github.com/kevalrakholiya/People_Intelligence_Engine
 cd HR_Analytics
 
 # Install dependencies
