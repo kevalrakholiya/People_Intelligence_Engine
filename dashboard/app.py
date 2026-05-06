@@ -36,7 +36,6 @@ DROP_COLS = [
 df = None
 model = None
 risk_df = None
-_initialized = False
 
 
 def get_risk_level(p):
@@ -85,13 +84,9 @@ def train_model():
     risk_df['_risk_pct'] = (risk_df['_risk_score'] * 100).round(1)
 
 
-@app.before_request
-def startup():
-    global _initialized
-    if not _initialized:
-        load_data()
-        train_model()
-        _initialized = True
+# ── Startup — runs at import time so gunicorn workers share a warm start ─────
+load_data()
+train_model()
 
 
 # ── Filter helper ─────────────────────────────────────────────────────────────
@@ -366,4 +361,5 @@ def predict():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
