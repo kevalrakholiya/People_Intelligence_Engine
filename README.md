@@ -1,113 +1,120 @@
-# People Intelligence Engine | Workforce Analytics & Attrition Prediction
+# People Intelligence Engine
 
-## Overview
-
-The People Intelligence Engine is a data-driven workforce analytics solution built to identify employee attrition patterns and predict turnover risk. The project combines business intelligence dashboards with a machine learning model to support proactive HR decision-making.
-
-Using a dataset of 1,470 employees with 39 features, the solution delivers both descriptive insights and predictive outputs to help organizations reduce attrition and improve workforce planning.
+An end-to-end **HR Analytics & Attrition Prediction** platform — interactive web dashboard + ML model — analysing workforce data for 1,470 employees to identify attrition drivers and predict individual turnover risk.
 
 ---
 
-## Objectives
+## Repository Structure
 
-- Analyze employee attrition across departments, demographics, and roles  
-- Identify key factors influencing employee turnover  
-- Build a predictive model to estimate attrition risk levels  
-- Deliver actionable insights for improving employee retention  
+```
+People_Intelligence_Engine/
+├── data/                         # Raw and cleaned datasets
+│   ├── HR_Analytics_clean.csv    # Cleaned employee dataset (1,470 × 44)
+│   └── HR Analytics.xlsx         # Excel workbook with pivot dashboards
+│
+├── notebooks/                    # Jupyter notebooks
+│   └── Predictive_model.ipynb    # ML model development & EDA
+│
+├── tableau/                      # Tableau workbook
+│   └── HR Analysis Dashbaord.twbx
+│
+├── images/                       # Dashboard screenshots & roadmap
+│
+└── dashboard/                    # ★ Web dashboard application
+    ├── app.py                    # Flask backend + REST ML API
+    ├── requirements.txt
+    ├── templates/index.html      # Single-page dashboard UI
+    └── static/                   # CSS + JavaScript
+```
+
+---
+
+## Web Dashboard — Quick Start
+
+```bash
+cd dashboard
+pip install -r requirements.txt
+python app.py
+# Open http://localhost:5000
+```
+
+### Features
+
+**Overview Tab** — 7 KPI cards + 8 interactive charts (all update on filter change):
+- Attrition overview, attrition by department, age distribution histogram
+- Overtime impact, job satisfaction by role, marital status analysis
+- Income vs attrition, risk distribution, ML feature importance
+
+**ML Predictions Tab** — Configure any employee profile (18 inputs) to get:
+- Animated risk gauge + probability score from the trained model
+- Risk level classification (Very High → Very Low)
+- Personalised recommendation + risk signal breakdown
+
+**Employee Risk Tab** — All 1,470 employees ranked by predicted risk:
+- Filter by risk level, search by role/department, paginated table
+
+**Sidebar Filters** — Department, Gender, Job Role, Marital Status, Overtime, Age range — apply globally to every chart simultaneously.
+
+---
+
+## ML Model
+
+- **Algorithm**: Logistic Regression (balanced class weights, StandardScaler)
+- **Input**: 22 numeric + 8 categorical features (OneHotEncoded)
+- **Performance**: ~77% accuracy, 71% recall on attrition class
+
+### Top Attrition Drivers
+
+| Driver | Effect |
+|---|---|
+| Overtime (Yes) | Strongest predictor of leaving |
+| Marital Status (Single) | Higher attrition risk |
+| Environment Satisfaction | Higher = less attrition |
+| Stock Option Level | Higher = more retention |
+| Job Satisfaction | Higher = more retention |
+| Years Since Last Promotion | Longer gap = higher risk |
+
+### Risk Stratification
+
+| Level | Threshold |
+|---|---|
+| Very High | ≥ 85% |
+| High | ≥ 70% |
+| Moderate | ≥ 50% |
+| Low | ≥ 30% |
+| Very Low | < 30% |
 
 ---
 
 ## Dataset
 
-- Total Records: 1,470 employees  
-- Features: 39  
-- Target Variable: Attrition (Yes/No)  
+IBM HR Analytics — 1,470 employees × 44 columns covering demographics, job attributes, compensation, engagement metrics, and career history.
 
-### Data Categories:
-- Demographics: Age, Gender, Marital Status  
-- Job Attributes: Department, Role, Monthly Income, Overtime  
-- Engagement Metrics: Job Satisfaction, Work-Life Balance  
-
----
-
-## Key Metrics
-
-- Attrition Rate: 16.12%  
-- Total Attrition: 237 employees  
-- Active Employees: 1,233  
-- Average Age: 37  
-
-### Attrition Distribution:
-- Gender: Male (150), Female (87)  
-- Department:
-  - R&D: 56%  
-  - Sales: 39%  
-  - HR: 5%  
-
----
-
-## Dashboard & Visualization
-
-### Excel Dashboard
-- Built using Pivot Tables and dynamic charts  
-- Includes KPI tracking and interactive slicers  
-- Enables filtering by department, gender, and education  
-
-### Tableau Dashboard
-- Visualizes attrition trends across departments  
-- Job satisfaction analysis by role  
-- Workforce segmentation by age and education  
-- Business-focused storytelling for decision-making  
+- **Overall attrition rate: 16.12%** (237 of 1,470)
+- Highest attrition: Sales (20.6%), HR (19.1%), R&D (13.8%)
 
 ---
 
 ## Key Insights
 
-- Overtime is the strongest contributor to attrition  
-- Employees with lower income levels have higher turnover rates  
-- Low job satisfaction is directly linked to employee exits  
-- Employees with shorter tenure show higher attrition risk  
-- Frequent business travel increases likelihood of attrition  
+- Overtime is the single strongest attrition predictor
+- Lower income correlates with higher turnover
+- Low job/environment satisfaction directly drives exits
+- Singles and frequent travellers show elevated attrition risk
+- Long gaps since last promotion significantly increase risk
 
 ---
 
-## Predictive Modeling
+## Original Dashboards
 
-A Logistic Regression model was developed to predict employee attrition risk.
-
-### Model Performance:
-- Accuracy: ~78%  
-
-### Key Features:
-- Overtime  
-- Job Satisfaction  
-- Monthly Income  
-- Business Travel  
-- Years at Company  
-
-### Output:
-- Classification of employees into Low, Medium, and High attrition risk  
-- Feature importance analysis  
-- Model evaluation metrics  
-
----
-
-## Business Recommendations
-
-- Reduce overtime through workload optimization  
-- Review compensation strategies for low-income roles  
-- Improve employee engagement and satisfaction programs  
-- Strengthen onboarding for new employees  
-- Introduce flexible work and travel policies  
+- **Excel** (`data/HR Analytics.xlsx`) — Pivot tables, KPI slicers, dynamic charts
+- **Tableau** (`tableau/HR Analysis Dashbaord.twbx`) — Multi-dimensional workforce visualisations
 
 ---
 
 ## Tech Stack
 
-- Python (pandas, NumPy, matplotlib, scikit-learn)  
-- Excel (dashboard development and KPI tracking)  
-- Tableau (data visualization and reporting)  
-- Machine Learning (Logistic Regression)  
+Python · Flask · scikit-learn · pandas · numpy · Chart.js · Excel · Tableau
 
 ---
 
@@ -116,9 +123,12 @@ A Logistic Regression model was developed to predict employee attrition risk.
 ```bash
 # Clone the repository
 git clone https://github.com/kevalrakholiya/People_Intelligence_Engine
-
-# Navigate to the project folder
-cd HR_Analytics
+cd People_Intelligence_Engine
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -r dashboard/requirements.txt
+
+# Launch the dashboard
+cd dashboard && python app.py
+# Open http://localhost:5000
+```

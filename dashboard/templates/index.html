@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>People Intelligence Engine</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────────────── -->
+<header class="header">
+  <div class="header-brand">
+    <div class="brand-icon">PIE</div>
+    <div>
+      <h1 class="brand-title">People Intelligence Engine</h1>
+      <p class="brand-sub">HR Analytics &amp; Attrition Prediction</p>
+    </div>
+  </div>
+  <nav class="header-nav">
+    <button class="nav-btn active" data-tab="overview" onclick="switchTab('overview')">Overview</button>
+    <button class="nav-btn" data-tab="predictions" onclick="switchTab('predictions')">ML Predictions</button>
+    <button class="nav-btn" data-tab="employees" onclick="switchTab('employees')">Employee Risk</button>
+  </nav>
+</header>
+
+<!-- ── Layout ──────────────────────────────────────────────────────────────── -->
+<div class="app-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h3>Filters</h3>
+      <button class="btn-ghost" onclick="resetFilters()">Reset All</button>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Department</label>
+      <select id="f-department" class="filter-select" onchange="applyFilters()">
+        <option value="">All Departments</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Gender</label>
+      <select id="f-gender" class="filter-select" onchange="applyFilters()">
+        <option value="">All Genders</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Job Role</label>
+      <select id="f-jobrole" class="filter-select" onchange="applyFilters()">
+        <option value="">All Roles</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Marital Status</label>
+      <select id="f-marital" class="filter-select" onchange="applyFilters()">
+        <option value="">All Statuses</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Overtime</label>
+      <select id="f-overtime" class="filter-select" onchange="applyFilters()">
+        <option value="">All</option>
+        <option value="Yes">With Overtime</option>
+        <option value="No">Without Overtime</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Age Range: <span id="age-range-label">18 – 60</span></label>
+      <div class="range-row">
+        <input type="range" id="f-age-min" min="18" max="60" value="18" class="range-input"
+               oninput="updateAgeLabel(); applyFilters()" />
+        <input type="range" id="f-age-max" min="18" max="60" value="60" class="range-input"
+               oninput="updateAgeLabel(); applyFilters()" />
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="filter-status" id="filter-status">Showing all 1,470 employees</div>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main-content">
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loading">
+      <div class="spinner"></div>
+      <p>Loading analytics…</p>
+    </div>
+
+    <!-- ── TAB: Overview ──────────────────────────────────────────────── -->
+    <section class="tab-panel active" id="tab-overview">
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card" style="--accent:#6366f1">
+          <div class="kpi-icon">👥</div>
+          <div class="kpi-body">
+            <div class="kpi-value" id="kpi-total">–</div>
+            <div class="kpi-label">Total Employees</div>
+          </div>
+        </div>
+        <div class="kpi-card" style="--accent:#ef4444">
+          <div class="kpi-icon">📉</div>
+          <div class="kpi-body">
+            <div class="kpi-value" id="kpi-rate">–</div>
+            <div class="kpi-label">Attrition Rate</div>
+          </div>
+        </div>
+        <div class="kpi-card" style="--accent:#22c55e">
+          <div class="kpi-icon">✅</div>
+          <div class="kpi-body">
+            <div class="kpi-value" id="kpi-active">–</div>
+            <div class="kpi-label">Active Employees</div>
+          </div>
+        </div>
+        <div class="kpi-card" style="--accent:#f97316">
+          <div class="kpi-icon">⚠️</div>
+          <div class="kpi-body">
+            <div class="kpi-value" id="kpi-highrisk">–</div>
+            <div class="kpi-label">High Risk Employees</div>
+          </div>
+        </div>
+        <div class="kpi-card" style="--accent:#8b5cf6">
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-body">
+            <div class="kpi-value" id="kpi-income">–</div>
+            <div class="kpi-label">Avg Monthly Income</div>
+          </div>
+        </div>
+        <div class="kpi-card" style="--accent:#0ea5e9">
+          <div class="kpi-icon">🎂</div>
+          <div class="kpi-body">
+            <div class="kpi-value" id="kpi-age">–</div>
+            <div class="kpi-label">Average Age</div>
+          </div>
+        </div>
+        <div class="kpi-card" style="--accent:#ec4899">
+          <div class="kpi-icon">🚪</div>
+          <div class="kpi-body">
+            <div class="kpi-value" id="kpi-attrition-count">–</div>
+            <div class="kpi-label">Employees Left</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row 1 -->
+      <div class="charts-grid-2">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Attrition Overview</h3>
+            <span class="chart-badge">Donut</span>
+          </div>
+          <div class="chart-wrap chart-wrap-sm">
+            <canvas id="chart-overview"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Attrition by Department</h3>
+            <span class="chart-badge">Bar</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chart-dept"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row 2 -->
+      <div class="charts-grid-2">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Age Distribution</h3>
+            <span class="chart-badge">Histogram</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chart-age"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Overtime Impact on Attrition</h3>
+            <span class="chart-badge">Grouped Bar</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chart-overtime"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row 3 -->
+      <div class="charts-grid-2">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Job Satisfaction by Role</h3>
+            <span class="chart-badge">Horizontal Bar</span>
+          </div>
+          <div class="chart-wrap chart-wrap-tall">
+            <canvas id="chart-satisfaction"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Attrition by Marital Status</h3>
+            <span class="chart-badge">Grouped Bar</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chart-marital"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row 4 -->
+      <div class="charts-grid-2">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Monthly Income vs Attrition</h3>
+            <span class="chart-badge">By Department</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chart-income"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Risk Distribution by Department</h3>
+            <span class="chart-badge">Stacked Bar</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chart-risk-dist"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature Importance -->
+      <div class="chart-card chart-card-full">
+        <div class="chart-header">
+          <h3>Top Attrition Drivers (Feature Importance)</h3>
+          <span class="chart-badge">ML Model Coefficients</span>
+        </div>
+        <div class="chart-wrap chart-wrap-tall">
+          <canvas id="chart-importance"></canvas>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── TAB: ML Predictions ────────────────────────────────────────── -->
+    <section class="tab-panel" id="tab-predictions">
+      <div class="section-header">
+        <h2>Employee Attrition Risk Predictor</h2>
+        <p>Fill in employee details to predict attrition risk using the trained ML model (Logistic Regression with balanced class weights).</p>
+      </div>
+
+      <div class="prediction-layout">
+
+        <!-- Form -->
+        <div class="pred-form-card">
+          <h3>Employee Profile</h3>
+          <div class="pred-form-grid">
+
+            <div class="form-group">
+              <label>Department</label>
+              <select id="pred-department" class="form-select">
+                <option value="Sales">Sales</option>
+                <option value="R&D">R&amp;D</option>
+                <option value="HR">HR</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Job Role</label>
+              <select id="pred-jobrole" class="form-select">
+                <option>Sales Executive</option>
+                <option>Research Scientist</option>
+                <option>Laboratory Technician</option>
+                <option>Manufacturing Director</option>
+                <option>Healthcare Representative</option>
+                <option>Manager</option>
+                <option>Sales Representative</option>
+                <option>Research Director</option>
+                <option>Human Resources</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Marital Status</label>
+              <select id="pred-marital" class="form-select">
+                <option>Single</option>
+                <option>Married</option>
+                <option>Divorced</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Education</label>
+              <select id="pred-education" class="form-select">
+                <option>High School</option>
+                <option>Associates Degree</option>
+                <option>Bachelor's Degree</option>
+                <option>Master's Degree</option>
+                <option>Doctoral Degree</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Education Field</label>
+              <select id="pred-edufield" class="form-select">
+                <option>Life Sciences</option>
+                <option>Medical</option>
+                <option>Marketing</option>
+                <option>Technical Degree</option>
+                <option>Human Resources</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Business Travel</label>
+              <select id="pred-travel" class="form-select">
+                <option>Travel_Rarely</option>
+                <option>Travel_Frequently</option>
+                <option>Non-Travel</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Overtime</label>
+              <select id="pred-overtime" class="form-select">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Gender</label>
+              <select id="pred-gender" class="form-select">
+                <option>Male</option>
+                <option>Female</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Age: <span id="pred-age-val">35</span></label>
+              <input type="range" id="pred-age" min="18" max="60" value="35"
+                     class="range-input" oninput="document.getElementById('pred-age-val').textContent=this.value" />
+            </div>
+
+            <div class="form-group">
+              <label>Monthly Income: $<span id="pred-income-val">5,000</span></label>
+              <input type="range" id="pred-income" min="1009" max="19999" value="5000" step="100"
+                     class="range-input"
+                     oninput="document.getElementById('pred-income-val').textContent=Number(this.value).toLocaleString()" />
+            </div>
+
+            <div class="form-group">
+              <label>Years at Company: <span id="pred-yac-val">5</span></label>
+              <input type="range" id="pred-yac" min="0" max="40" value="5"
+                     class="range-input" oninput="document.getElementById('pred-yac-val').textContent=this.value" />
+            </div>
+
+            <div class="form-group">
+              <label>Years Since Last Promotion: <span id="pred-promo-val">1</span></label>
+              <input type="range" id="pred-promo" min="0" max="15" value="1"
+                     class="range-input" oninput="document.getElementById('pred-promo-val').textContent=this.value" />
+            </div>
+
+            <div class="form-group">
+              <label>Job Satisfaction (1–4): <span id="pred-jobsat-val">3</span></label>
+              <input type="range" id="pred-jobsat" min="1" max="4" value="3"
+                     class="range-input" oninput="document.getElementById('pred-jobsat-val').textContent=this.value" />
+            </div>
+
+            <div class="form-group">
+              <label>Environment Satisfaction (1–4): <span id="pred-envsat-val">3</span></label>
+              <input type="range" id="pred-envsat" min="1" max="4" value="3"
+                     class="range-input" oninput="document.getElementById('pred-envsat-val').textContent=this.value" />
+            </div>
+
+            <div class="form-group">
+              <label>Work-Life Balance (1–4): <span id="pred-wlb-val">3</span></label>
+              <input type="range" id="pred-wlb" min="1" max="4" value="3"
+                     class="range-input" oninput="document.getElementById('pred-wlb-val').textContent=this.value" />
+            </div>
+
+            <div class="form-group">
+              <label>Stock Option Level (0–3): <span id="pred-stock-val">1</span></label>
+              <input type="range" id="pred-stock" min="0" max="3" value="1"
+                     class="range-input" oninput="document.getElementById('pred-stock-val').textContent=this.value" />
+            </div>
+
+            <div class="form-group">
+              <label>Job Involvement (1–4): <span id="pred-jobinv-val">3</span></label>
+              <input type="range" id="pred-jobinv" min="1" max="4" value="3"
+                     class="range-input" oninput="document.getElementById('pred-jobinv-val').textContent=this.value" />
+            </div>
+
+            <div class="form-group">
+              <label>Distance from Home (km): <span id="pred-dist-val">10</span></label>
+              <input type="range" id="pred-dist" min="1" max="29" value="10"
+                     class="range-input" oninput="document.getElementById('pred-dist-val').textContent=this.value" />
+            </div>
+
+          </div>
+
+          <button class="btn-predict" onclick="runPrediction()">
+            Predict Attrition Risk
+          </button>
+        </div>
+
+        <!-- Result panel -->
+        <div class="pred-result-card" id="pred-result">
+          <div class="pred-placeholder">
+            <div class="pred-placeholder-icon">🔮</div>
+            <h3>Configure employee profile and click Predict</h3>
+            <p>The ML model will compute attrition probability using Logistic Regression trained on 1,470 employees with balanced class weights.</p>
+          </div>
+
+          <div class="pred-output" id="pred-output" style="display:none">
+            <div class="gauge-container">
+              <svg class="gauge-svg" viewBox="0 0 200 120">
+                <path d="M 20 100 A 80 80 0 0 1 180 100" stroke="#334155" stroke-width="16" fill="none" stroke-linecap="round"/>
+                <path id="gauge-fill" d="M 20 100 A 80 80 0 0 1 180 100" stroke="#6366f1" stroke-width="16"
+                      fill="none" stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="251"/>
+              </svg>
+              <div class="gauge-center">
+                <div class="gauge-value" id="gauge-value">0%</div>
+                <div class="gauge-label">Attrition Risk</div>
+              </div>
+            </div>
+
+            <div class="risk-badge-large" id="risk-badge">–</div>
+
+            <div class="risk-recommendation" id="risk-rec"></div>
+
+            <div class="risk-factors">
+              <h4>Key Risk Signals</h4>
+              <div class="risk-factors-grid" id="risk-factors-grid"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick compare panel -->
+      <div class="chart-card chart-card-full" style="margin-top:24px">
+        <div class="chart-header">
+          <h3>Feature Importance — What Drives Attrition</h3>
+          <span class="chart-badge">Model Coefficients</span>
+        </div>
+        <div class="chart-wrap chart-wrap-tall">
+          <canvas id="chart-importance-pred"></canvas>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── TAB: Employee Risk ─────────────────────────────────────────── -->
+    <section class="tab-panel" id="tab-employees">
+      <div class="section-header">
+        <h2>Employee Risk Registry</h2>
+        <p>All employees ranked by ML-predicted attrition risk. Use filters to focus on specific segments.</p>
+      </div>
+
+      <div class="table-controls">
+        <div class="search-wrap">
+          <input type="text" id="emp-search" placeholder="Search by role, department, or ID…"
+                 class="search-input" oninput="searchEmployees()" />
+        </div>
+        <div class="risk-filter-tabs">
+          <button class="risk-tab active" data-level="" onclick="filterByRisk(this, '')">All</button>
+          <button class="risk-tab very-high" data-level="Very High" onclick="filterByRisk(this, 'Very High')">Very High</button>
+          <button class="risk-tab high" data-level="High" onclick="filterByRisk(this, 'High')">High</button>
+          <button class="risk-tab moderate" data-level="Moderate" onclick="filterByRisk(this, 'Moderate')">Moderate</button>
+          <button class="risk-tab low" data-level="Low" onclick="filterByRisk(this, 'Low')">Low</button>
+          <button class="risk-tab very-low" data-level="Very Low" onclick="filterByRisk(this, 'Very Low')">Very Low</button>
+        </div>
+        <div class="table-meta" id="table-meta">Loading…</div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="emp-table">
+          <thead>
+            <tr>
+              <th>Emp No</th>
+              <th>Department</th>
+              <th>Job Role</th>
+              <th>Age</th>
+              <th>Gender</th>
+              <th>Overtime</th>
+              <th>Monthly Income</th>
+              <th>Actual Status</th>
+              <th>Risk Score</th>
+              <th>Risk Level</th>
+            </tr>
+          </thead>
+          <tbody id="emp-table-body">
+            <tr><td colspan="10" class="table-loading">Loading employee data…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination" id="pagination"></div>
+
+    </section>
+
+  </main>
+</div>
+
+<script src="/static/js/dashboard.js"></script>
+</body>
+</html>
